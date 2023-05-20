@@ -1,6 +1,6 @@
 //Declarative Groovy
 pipeline{
-    agent any
+    agent {label "jobSearch_wknode1"}
     tools {
         maven "maven3.8.8"
         
@@ -78,7 +78,7 @@ pipeline{
                 emailext body: 'Successful deployment of Artifacts to Tomcat UAT.', subject: 'Update on Artifact Deployment', to: 'snypgeee@gmail.com'
             }
         }
-                        
-    }
+                   
+    } 
 }
 
