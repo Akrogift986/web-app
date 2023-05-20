@@ -1,0 +1,85 @@
+//Declarative Groovy
+pipeline{
+    agent any
+    tools {
+        maven "maven3.8.8"      
+    }
+    
+    stages{
+        stage("1. Git clone from repo"){
+            steps{
+                sh "echo start of git clone"
+                git branch: 'main', url: 'https://github.com/Akrogift986/web-app.git'
+                sh "echo end of git clone"
+            }
+        }
+            
+        stage("2. Build from Maven"){
+            steps{ 
+                sh "echo start building from maven"
+                sh "mvn clean package"
+                sh "echo end of building from maven"
+            }
+        }
+        
+        stage("3. Sonarqube Code Quality Scan"){
+            steps{        
+                sh "echo start sonar code quality scan"
+                sh "mvn sonar:sonar"
+                sh "echo end of sonar code quality scan"
+                
+            }
+        }
+         
+        stage("4. Slack Notification to Developers."){
+            steps{
+                sh "echo send Success scan message after Sonarqube Scode Quality Scan."
+                slackSend channel: '@U04LYFBUE8P', message: 'Successful scan of Artifacts'
+            }
+        }    
+        stage("5. Upload Artifact to Nexus"){
+             steps{
+                sh "echo start upload artifact to Nexus."
+                sh "mvn deploy"
+                sh "echo end of upload artifact to Nexus."
+                
+            }
+        }
+        
+        stage("6. Deploy to Tomcat"){
+            steps{
+                sh "echo start deploy to Tomcat server in UAT"
+                deploy adapters: [tomcat9(credentialsId: 'akrogift-credential', path: '', url: 'http://172.31.91.239:8080/')], contextPath: null, war: 'target/*.war'
+                sh "echo end of deploy to Tomcat server in UAT"
+            }
+        }
+    
+     
+        stage("7. Approval by PM"){
+             steps{
+                sh "echo Approval required from PM"
+                timeout(time: 4, unit: "DAYS"){
+                    input message: "Approval to Deploy to Production Environment."
+                }
+            }
+        }
+        
+        stage("8. Deploy to Production Environment"){
+            steps{
+                sh "echo start deploy to Production Environment"
+                deploy adapters: [tomcat9(credentialsId: 'akrogift-credential', path: '', url: 'http://172.31.91.239:8080')], contextPath: null, war: 'target/*.war'
+                sh "echo end of deploy to Production Environment"
+            }
+        }
+        
+        stage("9. Email Notification"){
+             steps{
+                sh "echo send success deployment message after deployment to tomcat UAT" 
+                emailext body: 'Successful deployment of Artifacts to Tomcat UAT.', subject: 'Update on Artifact Deployment', to: 'snypgeee@gmail.com'
+            }
+        }   
+            
+    }
+    
+}
+
