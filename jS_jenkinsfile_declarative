@@ -1,6 +1,6 @@
 //Declarative Groovy
 pipeline{
-    agent any
+    agent {label 'chatApp_node1'}
     tools {
         maven "maven3.8.8"      
     }
@@ -49,7 +49,7 @@ pipeline{
         stage("6. Deploy to Tomcat"){
             steps{
                 sh "echo start deploy to Tomcat server in UAT"
-                deploy adapters: [tomcat9(credentialsId: 'akrogift-credential', path: '', url: 'http://172.31.91.239:8080/')], contextPath: null, war: 'target/*.war'
+                deploy adapters: [tomcat9(credentialsId: 'chat_app-freestyle_credential', path: '', url: 'http://35.174.172.179:8080/')], contextPath: null, war: 'target/*.war'
                 sh "echo end of deploy to Tomcat server in UAT"
             }
         }
@@ -67,7 +67,7 @@ pipeline{
         stage("8. Deploy to Production Environment"){
             steps{
                 sh "echo start deploy to Production Environment"
-                deploy adapters: [tomcat9(credentialsId: 'akrogift-credential', path: '', url: 'http://172.31.91.239:8080')], contextPath: null, war: 'target/*.war'
+                deploy adapters: [tomcat9(credentialsId: 'chat_app-freestyle_credential', path: '', url: 'http://35.174.172.179:8080/')], contextPath: null, war: 'target/*.war'
                 sh "echo end of deploy to Production Environment"
             }
         }
@@ -82,4 +82,3 @@ pipeline{
     }
     
 }
-
